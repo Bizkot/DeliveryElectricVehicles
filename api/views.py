@@ -89,3 +89,23 @@ def load_vehicle_config(vehicle_config_file):
     #                   vehicle_config.get('Vehicle', 'end_time'))
     vehicle = Vehicle(150, 100, 60, 180, 480, '07:00', '19:00')
     return vehicle
+
+def get_distance(distances, origin, destination):
+    """Return the distance between two locations
+
+    Parameters:
+    distances: Distance matrix
+    origin: origin id
+    destination: destination id
+    """
+    return distances.item((origin, destination))
+
+def get_time(times, origin, destination):
+    """Return the time between two locations
+
+    Parameters:
+    times: Time matrix
+    origin: origin id
+    destination: destination id
+    """
+    return times.item((origin, destination))
