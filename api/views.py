@@ -28,7 +28,6 @@ def first_heuristic(request):
             distances = load_distances(distance_file)
             times = load_times(times_file)
             vehicle = load_vehicle_config(vehicle_config_file)
-            print(has_enough_time(vehicle, times, 1, 2))
             return HttpResponse("First heuristic is done")
         else:
             return HttpResponse("Files not found")
@@ -98,8 +97,8 @@ def get_distance(distances, origin, destination):
 
     Parameters:
     distances: Distance matrix
-    origin: origin id
-    destination: destination id
+    origin: Origin id
+    destination: Destination id
     """
     return distances.item((origin, destination))
 
@@ -109,8 +108,8 @@ def get_time(times, origin, destination):
 
     Parameters:
     times: Time matrix
-    origin: origin id
-    destination: destination id
+    origin: Origin id
+    destination: Destination id
     """
     return times.item((origin, destination))
 
@@ -121,14 +120,14 @@ def has_enough_energy(vehicle, distances, origin, destination):
     Parameters:
     vehicle: The vehicle
     distances: Distance matrix
-    origin: origin id
-    destination: destination id
+    origin: Origin id
+    destination: Destination id
     """
     next_visit_distance = get_distance(distances, origin, destination)
     # Depot id is always 0
     back_to_depot_distance = get_distance(distances, destination, 0)
     total_distance = next_visit_distance + back_to_depot_distance
-    return vehicle.left_dist >= total_distance
+    return vehicle.dist_left >= total_distance
 
 
 def has_enough_time(vehicle, times, origin, destination):
@@ -136,9 +135,9 @@ def has_enough_time(vehicle, times, origin, destination):
 
     Parameters:
     vehicle: The vehicle
-    distances: Distance matrix
-    origin: origin id
-    destination: destination id
+    times: Time matrix
+    origin: Origin id
+    destination: Destination id
     """
     next_visit_time = get_time(times, origin, destination)
     # Depot id is always 0
@@ -146,3 +145,13 @@ def has_enough_time(vehicle, times, origin, destination):
     total_time_seconds = next_visit_time + back_to_depot_time
     total_time = datetime.timedelta(seconds=total_time_seconds)
     return vehicle.working_time_left >= total_time
+
+
+def has_enough_capacity(vehicle, destination):
+    """Return true if the vehicle has enough capacity to handle its next location
+
+    Parameters:
+    vehicle: The vehicle
+    destination: Destination as Visit
+    """
+    return vehicle.capacity_left >= destination.demand
