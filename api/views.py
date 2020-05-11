@@ -148,14 +148,14 @@ def has_enough_time(vehicle, times, origin, destination):
     return vehicle.working_time_left >= total_time
 
 
-def has_enough_capacity(vehicle, destination):
+def has_enough_capacity(vehicle, destination_demand):
     """Return true if the vehicle has enough capacity to handle its next location
 
     Parameters:
     vehicle: The vehicle
-    destination: Destination as Visit
+    destination_demand: Destination demand
     """
-    return vehicle.capacity_left >= destination.demand
+    return vehicle.capacity_left >= destination_demand
 
 
 def define_visit_order(vehicle, distances, times, visits):
@@ -169,6 +169,7 @@ def define_visit_order(vehicle, distances, times, visits):
     for current_visit, next_visit in zip(visits, visits[1:]):
         current_visit_id = current_visit.visit_id
         next_visit_id = next_visit.visit_id
+        # Checking if energy level is enough
         if has_enough_energy(vehicle, distances, current_visit_id, next_visit_id):
             print("enough energy for visit {0} to {1}".format(
                 current_visit_id, next_visit_id))
@@ -176,16 +177,26 @@ def define_visit_order(vehicle, distances, times, visits):
             print("we stop here, not enough energy for visit {0} to {1}".format(
                 current_visit_id, next_visit_id))
             break
+        # Checking if working time is enough
         if has_enough_time(vehicle, times, current_visit_id, next_visit_id):
             print("enough time for visit {0} to {1}".format(
+                current_visit_id, next_visit_id))
+        else:
+            print("we stop here, not enough time for visit {0} to {1}".format(
+                current_visit_id, next_visit_id))
+            break
+        # Checking if capacity is enough
+        if has_enough_capacity(vehicle, next_visit.demand):
+            print("enough capacity for visit {0} to {1}".format(
                 current_visit_id, next_visit_id))
             possible_visit_list.append(next_visit)
             vehicle.consume_energy(get_distance(
                 distances, current_visit_id, next_visit_id))
             vehicle.consume_time(datetime.timedelta(
                 seconds=get_time(times, current_visit_id, next_visit_id)))
+            vehicle.consume_capacity(next_visit.demand)
         else:
-            print("we stop here, not enough time for visit {0} to {1}".format(
+            print("we stop here, not enough capacity for visit {0} to {1}".format(
                 current_visit_id, next_visit_id))
             break
     return possible_visit_list

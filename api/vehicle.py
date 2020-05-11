@@ -20,3 +20,6 @@ class Vehicle:
 
     def consume_time(self, time):
         self.working_time_left = self.working_time_left - time
+
+    def consume_capacity(self, capacity):
+        self.capacity_left = self.capacity_left - capacity
