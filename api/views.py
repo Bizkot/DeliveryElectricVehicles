@@ -27,6 +27,7 @@ def first_heuristic(request):
             distances = load_distances(distance_file)
             times = load_times(times_file)
             vehicle = load_vehicle_config(vehicle_config_file)
+            print(has_enough_energy(vehicle, distances, 1, 2))
             return HttpResponse("First heuristic is done")
         else:
             return HttpResponse("Files not found")
@@ -90,6 +91,7 @@ def load_vehicle_config(vehicle_config_file):
     vehicle = Vehicle(150, 100, 60, 180, 480, '07:00', '19:00')
     return vehicle
 
+
 def get_distance(distances, origin, destination):
     """Return the distance between two locations
 
@@ -100,6 +102,7 @@ def get_distance(distances, origin, destination):
     """
     return distances.item((origin, destination))
 
+
 def get_time(times, origin, destination):
     """Return the time between two locations
 
@@ -109,3 +112,19 @@ def get_time(times, origin, destination):
     destination: destination id
     """
     return times.item((origin, destination))
+
+
+def has_enough_energy(vehicle, distances, origin, destination):
+    """Return true if the vehicle has enough energy to reach its next location and then go back to the depot
+
+    Parameters:
+    vehicle: The vehicle
+    distances: Distance matrix
+    origin: origin id
+    destination: destination id
+    """
+    next_visit_distance = get_distance(distances, origin, destination)
+    # Depot id is always 0
+    back_to_depot_distance = get_distance(distances, destination, 0)
+    total_distance = next_visit_distance + back_to_depot_distance
+    return vehicle.left_dist >= total_distance
