@@ -7,6 +7,7 @@ import configparser
 from django.views.decorators.csrf import csrf_exempt
 
 from api.visit import Visit
+from api.vehicle import Vehicle
 
 
 def index(request):
@@ -25,7 +26,7 @@ def first_heuristic(request):
             visits = load_visits(visits_file)
             distances = load_distances(distance_file)
             times = load_times(times_file)
-            vehicle_config = load_vehicle_config(vehicle_config_file) 
+            vehicle = load_vehicle_config(vehicle_config_file)
             return HttpResponse("First heuristic is done")
         else:
             return HttpResponse("Files not found")
@@ -34,6 +35,11 @@ def first_heuristic(request):
 
 
 def load_visits(visits_file):
+    """Return a Visit array
+
+    Parameters:
+    visits_file: CSV file representing visits for a day
+    """
     decoded_visits_file = visits_file.read().decode('latin-1')
     io_string = io.StringIO(decoded_visits_file)
     line_count = 0
@@ -50,16 +56,36 @@ def load_visits(visits_file):
 
 
 def load_distances(distance_file):
+    """Return a distance matrix
+
+    Parameters:
+    distance_file: Text file representing distances between locations
+    """
     distances = numpy.loadtxt(distance_file)
     return distances
 
 
 def load_times(time_file):
+    """Return a time matrix
+
+    Parameters:
+    time_file: Text file representing time between locations
+    """
     times = numpy.loadtxt(time_file)
     return times
 
-# Not working at the moment ? (ask teacher)
+
 def load_vehicle_config(vehicle_config_file):
+    """Return a Vehicle
+
+    Parameters:
+    vehicle_config_file: Ini file with vehicle config
+    """
     vehicle_config = configparser.ConfigParser()
     vehicle_config.read(vehicle_config_file)
-    print(vehicle_config.sections())
+    # vehicle = Vehicle(vehicle_config.get('Vehicle', 'max_dist'), vehicle_config.get('Vehicle', 'capacity'),
+    #                   vehicle_config.get('Vehicle', 'charge_fast'), vehicle_config.get('Vehicle', 'charge_medium'),
+    #                   vehicle_config.get('Vehicle', 'charge_slow'), vehicle_config.get('Vehicle', 'start_time'),
+    #                   vehicle_config.get('Vehicle', 'end_time'))
+    vehicle = Vehicle(150, 100, 60, 180, 480, '07:00', '19:00')
+    return vehicle
