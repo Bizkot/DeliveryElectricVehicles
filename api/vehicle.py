@@ -17,3 +17,6 @@ class Vehicle:
 
     def consume_energy(self, dist):
         self.dist_left = self.dist_left - dist
+
+    def consume_time(self, time):
+        self.working_time_left = self.working_time_left - time

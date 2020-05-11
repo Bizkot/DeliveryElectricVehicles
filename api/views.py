@@ -167,7 +167,25 @@ def define_visit_order(vehicle, distances, times, visits):
     """
     possible_visit_list = [visits[0]]
     for current_visit, next_visit in zip(visits, visits[1:]):
-        if has_enough_energy(vehicle, distances, current_visit.visit_id, next_visit.visit_id):
+        current_visit_id = current_visit.visit_id
+        next_visit_id = next_visit.visit_id
+        if has_enough_energy(vehicle, distances, current_visit_id, next_visit_id):
+            print("enough energy for visit {0} to {1}".format(
+                current_visit_id, next_visit_id))
+        else:
+            print("we stop here, not enough energy for visit {0} to {1}".format(
+                current_visit_id, next_visit_id))
+            break
+        if has_enough_time(vehicle, times, current_visit_id, next_visit_id):
+            print("enough time for visit {0} to {1}".format(
+                current_visit_id, next_visit_id))
             possible_visit_list.append(next_visit)
-            vehicle.consume_energy(get_distance(distances, current_visit.visit_id, next_visit.visit_id))
+            vehicle.consume_energy(get_distance(
+                distances, current_visit_id, next_visit_id))
+            vehicle.consume_time(datetime.timedelta(
+                seconds=get_time(times, current_visit_id, next_visit_id)))
+        else:
+            print("we stop here, not enough time for visit {0} to {1}".format(
+                current_visit_id, next_visit_id))
+            break
     return possible_visit_list
