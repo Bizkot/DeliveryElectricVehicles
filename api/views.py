@@ -3,6 +3,7 @@ import csv
 import io
 import numpy
 import configparser
+import datetime
 
 from django.views.decorators.csrf import csrf_exempt
 
@@ -27,7 +28,7 @@ def first_heuristic(request):
             distances = load_distances(distance_file)
             times = load_times(times_file)
             vehicle = load_vehicle_config(vehicle_config_file)
-            print(has_enough_energy(vehicle, distances, 1, 2))
+            print(has_enough_time(vehicle, times, 1, 2))
             return HttpResponse("First heuristic is done")
         else:
             return HttpResponse("Files not found")
@@ -128,3 +129,20 @@ def has_enough_energy(vehicle, distances, origin, destination):
     back_to_depot_distance = get_distance(distances, destination, 0)
     total_distance = next_visit_distance + back_to_depot_distance
     return vehicle.left_dist >= total_distance
+
+
+def has_enough_time(vehicle, times, origin, destination):
+    """Return true if the vehicle has enough time to reach its next location and then go back to the depot
+
+    Parameters:
+    vehicle: The vehicle
+    distances: Distance matrix
+    origin: origin id
+    destination: destination id
+    """
+    next_visit_time = get_time(times, origin, destination)
+    # Depot id is always 0
+    back_to_depot_time = get_time(times, origin, destination)
+    total_time_seconds = next_visit_time + back_to_depot_time
+    total_time = datetime.timedelta(seconds=total_time_seconds)
+    return vehicle.working_time_left >= total_time

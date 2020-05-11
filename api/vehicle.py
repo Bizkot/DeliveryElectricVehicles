@@ -10,6 +10,6 @@ class Vehicle:
         self.charge_fast = charge_fast
         self.charge_medium = charge_medium
         self.charge_slow = charge_slow
-
         self.working_time = datetime.datetime.strptime(
             end_time, '%H:%M') - datetime.datetime.strptime(start_time, '%H:%M')
+        self.working_time_left = self.working_time
