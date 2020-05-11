@@ -28,6 +28,7 @@ def first_heuristic(request):
             distances = load_distances(distance_file)
             times = load_times(times_file)
             vehicle = load_vehicle_config(vehicle_config_file)
+            define_visit_order(vehicle, distances, times, visits)
             return HttpResponse("First heuristic is done")
         else:
             return HttpResponse("Files not found")
@@ -50,8 +51,8 @@ def load_visits(visits_file):
             pass
         else:
             # visit[0] = visit_id; visit[1] = visit_name; visit[2] = visit_lat; visit[3] = visit_lon; visit[4] = demand
-            visits.append(Visit(visit[0], visit[1],
-                                visit[2], visit[3], visit[4]))
+            visits.append(Visit(int(visit[0]), visit[1],
+                                float(visit[2]), float(visit[3]), int(visit[4])))
         line_count += 1
     return visits
 
@@ -155,3 +156,18 @@ def has_enough_capacity(vehicle, destination):
     destination: Destination as Visit
     """
     return vehicle.capacity_left >= destination.demand
+
+
+def define_visit_order(vehicle, distances, times, visits):
+    """Return a possible Visit array
+
+    Parameters:
+    vehicle: The vehicle
+    visits: Visit list 
+    """
+    possible_visit_list = [visits[0]]
+    for current_visit, next_visit in zip(visits, visits[1:]):
+        if has_enough_energy(vehicle, distances, current_visit.visit_id, next_visit.visit_id):
+            possible_visit_list.append(next_visit)
+            vehicle.consume_energy(get_distance(distances, current_visit.visit_id, next_visit.visit_id))
+    return possible_visit_list

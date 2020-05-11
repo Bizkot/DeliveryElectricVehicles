@@ -14,3 +14,6 @@ class Vehicle:
         self.working_time = datetime.datetime.strptime(
             end_time, '%H:%M') - datetime.datetime.strptime(start_time, '%H:%M')
         self.working_time_left = self.working_time
+
+    def consume_energy(self, dist):
+        self.dist_left = self.dist_left - dist
