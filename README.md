@@ -9,7 +9,7 @@ python3 -m venv venv
 pip install -r requirements.txt
 python manage.py runserver
 ```
-Test the server by pinging [localhost](127.0.0.1:8000/api)
+Test the server by pinging [localhost](http://127.0.0.1:8000/api)
 
 ## Testing a heuristic
 To test a heuristic you need to use an API request builder such as Postman.
