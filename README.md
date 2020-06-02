@@ -22,6 +22,7 @@ You need 5 elements to perform a test:
 * A vehicle configuration file
 
 ![Postman example 1](images/postman_1.png)
+
 The important point here is that you must have the same "Key" as on the image:
 * visits for the visit file
 * distance for the distance file
@@ -29,5 +30,14 @@ The important point here is that you must have the same "Key" as on the image:
 * vehicle for the vehicle configuration file
 
 ## Heuristic list
-* api/firstheuristic
-* api/secondheuristic
+### api/firstheuristic
+The first heuristic only uses 1 vehicle. It loops through the visit list and check if the vehicle has enough:
+* energy
+* time
+* capacity
+
+to go from the previous visit to the next one and also to go back to the depot.
+Whenever the vehicle is lacking one of these components, the tour stops and the heuristic is completed.
+
+### api/secondheuristic
+The second heuristic uses unlimited amount of vehicles and add one vehicle to the tour if one of the above component is lacking.

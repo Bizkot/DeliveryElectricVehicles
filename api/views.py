@@ -11,6 +11,7 @@ from api.Visit import Visit
 from api.Vehicle import Vehicle
 from api.VisitLinkedList import Node, VisitLinkedList
 
+
 @csrf_exempt
 def index(request):
     urls = []
@@ -33,6 +34,28 @@ def first_heuristic(request):
             times = load_times(times_file)
             vehicle = load_vehicle_config(vehicle_config_file)
             possible_visit_list = define_visit_order(
+                vehicle, distances, times, visits)
+            return HttpResponse(possible_visit_list)
+        else:
+            return HttpResponse("Files not found")
+    else:
+        return HttpResponse("Wrong method")
+
+
+@csrf_exempt
+def second_heuristic(request):
+    if request.method == 'POST':
+        if request.FILES:
+            visits_file = request.FILES.get('visits')
+            distance_file = request.FILES.get('distance')
+            times_file = request.FILES.get('times')
+            vehicle_config_file = request.FILES.get('vehicle')
+
+            visits = load_visits(visits_file)
+            distances = load_distances(distance_file)
+            times = load_times(times_file)
+            vehicle = load_vehicle_config(vehicle_config_file)
+            possible_visit_list = define_visit_order_mutiple_vehicles(
                 vehicle, distances, times, visits)
             return HttpResponse(possible_visit_list)
         else:
@@ -206,4 +229,54 @@ def define_visit_order(vehicle, distances, times, visits):
             print("we stop here, not enough capacity for visit {0} to {1}".format(
                 current_visit_id, next_visit_id))
             break
+    return possible_visit_list
+
+
+def define_visit_order_mutiple_vehicles(vehicle, distances, times, visits):
+    """Return a possible Visit array with mutiple vehicle if necessary
+
+    Parameters:
+    vehicle: The vehicle
+    visits: Visit list 
+    """
+    # It will be used to "reset" the vehicle when we add a new one
+    vehicle_save = vehicle
+    possible_visit_list = VisitLinkedList()
+    possible_visit_list.add_last(visits[0])
+    for current_visit, next_visit in zip(visits, visits[1:]):
+        current_visit_id = current_visit.visit_id
+        next_visit_id = next_visit.visit_id
+        # Checking if energy level is enough
+        if has_enough_energy(vehicle, distances, current_visit_id, next_visit_id):
+            print("enough energy for visit {0} to {1}".format(
+                current_visit_id, next_visit_id))
+        else:
+            print("we add a new vehicle here, not enough energy for visit {0} to {1}".format(
+                current_visit_id, next_visit_id))
+            vehicle = vehicle_save
+            continue
+        # Checking if working time is enough
+        if has_enough_time(vehicle, times, current_visit_id, next_visit_id):
+            print("enough time for visit {0} to {1}".format(
+                current_visit_id, next_visit_id))
+        else:
+            print("we add a new vehicle here, not enough time for visit {0} to {1}".format(
+                current_visit_id, next_visit_id))
+            vehicle = vehicle_save
+            continue
+        # Checking if capacity is enough
+        if has_enough_capacity(vehicle, next_visit.demand):
+            print("enough capacity for visit {0} to {1}".format(
+                current_visit_id, next_visit_id))
+            possible_visit_list.add_last(next_visit)
+            vehicle.consume_energy(get_distance(
+                distances, current_visit_id, next_visit_id))
+            vehicle.consume_time(datetime.timedelta(
+                seconds=get_time(times, current_visit_id, next_visit_id)))
+            vehicle.consume_capacity(next_visit.demand)
+        else:
+            print("we add a new vehicle here, not enough capacity for visit {0} to {1}".format(
+                current_visit_id, next_visit_id))
+            vehicle = vehicle_save
+            continue
     return possible_visit_list
