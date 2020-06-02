@@ -7,12 +7,16 @@ import datetime
 
 from django.views.decorators.csrf import csrf_exempt
 
-from api.visit import Visit
-from api.vehicle import Vehicle
+from api.Visit import Visit
+from api.Vehicle import Vehicle
+from api.VisitLinkedList import Node, VisitLinkedList
 
-
+@csrf_exempt
 def index(request):
-    return HttpResponse("Hello world. You're at the api index.")
+    urls = []
+    urls.append('api/firstheuristic')
+    urls.append('api/secondheuristic')
+    return HttpResponse('\n'.join(urls))
 
 
 @csrf_exempt
@@ -28,8 +32,9 @@ def first_heuristic(request):
             distances = load_distances(distance_file)
             times = load_times(times_file)
             vehicle = load_vehicle_config(vehicle_config_file)
-            define_visit_order(vehicle, distances, times, visits)
-            return HttpResponse("First heuristic is done")
+            possible_visit_list = define_visit_order(
+                vehicle, distances, times, visits)
+            return HttpResponse(possible_visit_list)
         else:
             return HttpResponse("Files not found")
     else:
@@ -89,6 +94,7 @@ def load_vehicle_config(vehicle_config_file):
     #                   vehicle_config.get('Vehicle', 'charge_fast'), vehicle_config.get('Vehicle', 'charge_medium'),
     #                   vehicle_config.get('Vehicle', 'charge_slow'), vehicle_config.get('Vehicle', 'start_time'),
     #                   vehicle_config.get('Vehicle', 'end_time'))
+    # Can't read properly the vehicle.ini file, so hard coding the vehicle config
     vehicle = Vehicle(150, 100, 60, 180, 480, '07:00', '19:00')
     return vehicle
 
@@ -165,7 +171,8 @@ def define_visit_order(vehicle, distances, times, visits):
     vehicle: The vehicle
     visits: Visit list 
     """
-    possible_visit_list = [visits[0]]
+    possible_visit_list = VisitLinkedList()
+    possible_visit_list.add_last(visits[0])
     for current_visit, next_visit in zip(visits, visits[1:]):
         current_visit_id = current_visit.visit_id
         next_visit_id = next_visit.visit_id
@@ -189,7 +196,7 @@ def define_visit_order(vehicle, distances, times, visits):
         if has_enough_capacity(vehicle, next_visit.demand):
             print("enough capacity for visit {0} to {1}".format(
                 current_visit_id, next_visit_id))
-            possible_visit_list.append(next_visit)
+            possible_visit_list.add_last(next_visit)
             vehicle.consume_energy(get_distance(
                 distances, current_visit_id, next_visit_id))
             vehicle.consume_time(datetime.timedelta(
