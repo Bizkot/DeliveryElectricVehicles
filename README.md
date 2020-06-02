@@ -1,5 +1,6 @@
 # DeliveryElectricVehicles
-
+The goal here is to minimize the number of vehicles used to do a tour to deliver clients.
+It is also to maximize the number of client delivered. If some clients are not delivered, we're applying a penalty.
 ## Installation
 ```bash
 git clone https://github.com/Bizkot/DeliveryElectricVehicles.git
